@@ -81,6 +81,16 @@ const QuestionGenres = styled.div`
   padding: 4px;
 `;
 
+const AlertWrapper = styled.div`
+  width: 100%;
+  position: fixed;
+  top: 90%;
+  min-width: 400px;
+  margin-left: -2rem;
+  display: flex;
+  justify-content: center;
+`;
+
 type Inputs = {
   title: string;
   content: string;
@@ -275,10 +285,14 @@ const Questions = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <Alert status={questionAlert.status} display={questionAlert.display && 'none'}>
-        <AlertIcon />
-        <AlertTitle>{questionAlert.message}</AlertTitle>
-      </Alert>
+      {questionAlert.display && (
+        <AlertWrapper>
+          <Alert w={"90%"} status={questionAlert.status}>
+            <AlertIcon />
+            <AlertTitle>{questionAlert.message}</AlertTitle>
+          </Alert>
+        </AlertWrapper>
+      )}
     </Layout>
   );
 };
