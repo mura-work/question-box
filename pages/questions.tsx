@@ -22,7 +22,7 @@ import {
   AlertIcon,
   AlertTitle,
 } from "@chakra-ui/react";
-import { DeleteIcon, ChatIcon } from "@chakra-ui/icons";
+import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 
 type Genre = {
   id: number;
@@ -277,7 +277,7 @@ const Questions = () => {
                   </Tag>
                 ))}
               </QuestionGenres>
-              <ChatIcon
+              <EditIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
                 _hover={{ cursor: "pointer" }}
@@ -289,6 +289,8 @@ const Questions = () => {
                     }));
                 }}
               />
+              <ChatIcon boxSize={"1.5rem"} mr="0.5rem" />
+              <span>{q.comments.length}</span>
               <DeleteIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
