@@ -42,6 +42,8 @@ const Layout: React.FC<Props> = ( props ) => (
     <style jsx>{`
       .layout {
         padding: 0 2rem;
+        position: relative;
+        width: 100%;
       }
     `}</style>
   </div>

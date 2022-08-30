@@ -24,10 +24,11 @@ export default class RequestMapper {
 		})
 	}
 
-	static async delete(url) {
+	static async delete(url, body) {
 		return await fetch('/api' + url, {
 			method: 'DELETE',
 			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(body),
 		})
 	}
 }

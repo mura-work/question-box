@@ -3,7 +3,8 @@ import prisma from "../../lib/prisma";
 
 const methodHandler = {
   GET: findQuestions,
-  POST: createQuestions,
+  POST: createQuestion,
+  DELETE: deleteQuestion,
 };
 
 export default async function handler(
@@ -20,7 +21,7 @@ async function findQuestions() {
   });
 }
 
-async function createQuestions(req) {
+async function createQuestion(req) {
   const { title, content } = req.body;
   return await prisma.question.create({
     data: {
@@ -30,5 +31,12 @@ async function createQuestions(req) {
         connect: req.body.genres.map((g) => ({ id: g.id })),
       },
     },
+  });
+}
+
+async function deleteQuestion(req) {
+  const { id } = req.body;
+  return await prisma.question.delete({
+    where: { id: Number(id) },
   });
 }

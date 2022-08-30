@@ -23,7 +23,7 @@ import {
   AlertIcon,
   AlertTitle,
 } from "@chakra-ui/react";
-import { values } from "lodash";
+import { DeleteIcon } from "@chakra-ui/icons";
 
 type Genre = {
   id: number;
@@ -77,8 +77,24 @@ const QuestionContent = styled.p`
 `;
 
 const QuestionGenres = styled.div`
-  margin-left: auto;
+  margin-right: auto;
   padding: 4px;
+`;
+
+const QuestionCardFooter = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+`;
+
+const AlertWrapper = styled.div`
+  width: 100%;
+  position: fixed;
+  top: 90%;
+  min-width: 400px;
+  margin-left: -2rem;
+  display: flex;
+  justify-content: center;
 `;
 
 type Inputs = {
@@ -127,6 +143,16 @@ const Questions = () => {
 
   const displayModal = () => setDisplayQuestionModal(true);
 
+  const setModalTimeout = () => {
+    const hideAlert = () => {
+      setQuestionAlert((prevValue) => ({
+        ...prevValue,
+        display: false,
+      }));
+    };
+    setTimeout(hideAlert, 5000);
+  };
+
   const createQuestion = async () => {
     try {
       const result = await RequestMapper.post("/questions", questionInput);
@@ -145,13 +171,7 @@ const Questions = () => {
         message: "質問が作成できませんでした",
       });
     } finally {
-      const hideAlert = () => {
-        setQuestionAlert((prevValue) => ({
-          ...prevValue,
-          display: false,
-        }));
-      };
-      setTimeout(hideAlert, 5000);
+      setModalTimeout();
     }
   };
 
@@ -171,6 +191,22 @@ const Questions = () => {
     }
   };
 
+  const deleteQuestion = async (questionId) => {
+    console.log(questionId);
+    if (!questionId) return;
+    const result = await RequestMapper.delete("/questions", { id: questionId });
+    if (result) {
+      const newData = questions.filter((q) => q.id !== questionId)
+      setQuestions(newData)
+      setQuestionAlert({
+        status: "info",
+        display: true,
+        message: "質問が削除されました。",
+      });
+      setModalTimeout();
+    }
+  };
+
   return (
     <Layout>
       <Heading textAlign="center" mb="10">
@@ -186,18 +222,26 @@ const Questions = () => {
               {q.title}
             </Heading>
             <QuestionContent>{q.content}</QuestionContent>
-            <QuestionGenres>
-              {q.genres.map((g) => (
-                <Tag
-                  key={g.id}
-                  colorScheme={TAG_COLOR_CODE[g.id]}
-                  variant="solid"
-                  mr="1"
-                >
-                  {g.name}
-                </Tag>
-              ))}
-            </QuestionGenres>
+            <QuestionCardFooter>
+              <QuestionGenres>
+                {q.genres.map((g) => (
+                  <Tag
+                    key={g.id}
+                    colorScheme={TAG_COLOR_CODE[g.id]}
+                    variant="solid"
+                    mr="1"
+                  >
+                    {g.name}
+                  </Tag>
+                ))}
+              </QuestionGenres>
+              <DeleteIcon
+                boxSize={"1.5rem"}
+                mr="0.5rem"
+                _hover={{ cursor: "pointer" }}
+                onClick={() => deleteQuestion(q.id)}
+              />
+            </QuestionCardFooter>
           </QuestionCard>
         ))}
       </QuestionPage>
@@ -275,10 +319,14 @@ const Questions = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <Alert status={questionAlert.status} display={questionAlert.display && 'none'}>
-        <AlertIcon />
-        <AlertTitle>{questionAlert.message}</AlertTitle>
-      </Alert>
+      {questionAlert.display && (
+        <AlertWrapper>
+          <Alert w={"90%"} status={questionAlert.status}>
+            <AlertIcon />
+            <AlertTitle>{questionAlert.message}</AlertTitle>
+          </Alert>
+        </AlertWrapper>
+      )}
     </Layout>
   );
 };
