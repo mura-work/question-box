@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Layout from "../components/Layout";
-import useSWR from "swr";
 import RequestMapper from "../lib/RequestMapper";
 import styled from "styled-components";
 import {
@@ -23,7 +22,7 @@ import {
   AlertIcon,
   AlertTitle,
 } from "@chakra-ui/react";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 
 type Genre = {
   id: number;
@@ -111,6 +110,11 @@ type alertTypes = {
   status: alertStatusTypes;
 };
 
+type commnetInputs = {
+  content: string;
+  questionId: number;
+};
+
 const Questions = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -121,10 +125,16 @@ const Questions = () => {
   });
   const [displayQuestionModal, setDisplayQuestionModal] =
     useState<boolean>(false);
-  const [questionAlert, setQuestionAlert] = useState<alertTypes>({
+  const [formAlert, setformAlert] = useState<alertTypes>({
     display: false,
     message: "",
     status: "success",
+  });
+  const [displayCommentModal, setDisplayCommentModal] =
+    useState<boolean>(false);
+  const [commentInput, setCommentInput] = useState<commnetInputs>({
+    content: "",
+    questionId: -100,
   });
 
   useEffect(() => {
@@ -145,7 +155,7 @@ const Questions = () => {
 
   const setModalTimeout = () => {
     const hideAlert = () => {
-      setQuestionAlert((prevValue) => ({
+      setformAlert((prevValue) => ({
         ...prevValue,
         display: false,
       }));
@@ -155,11 +165,11 @@ const Questions = () => {
 
   const createQuestion = async () => {
     try {
-      const result = await RequestMapper.post("/questions", questionInput);
+      await RequestMapper.post("/questions", questionInput);
       const questionData = await RequestMapper.get("/questions");
       setQuestions(questionData);
       setDisplayQuestionModal(false);
-      setQuestionAlert({
+      setformAlert({
         status: "success",
         display: true,
         message: "質問が作成されました！",
@@ -170,7 +180,7 @@ const Questions = () => {
         genres: [],
       });
     } catch (e) {
-      setQuestionAlert({
+      setformAlert({
         status: "error",
         display: true,
         message: "質問が作成できませんでした",
@@ -202,11 +212,39 @@ const Questions = () => {
     if (result) {
       const newData = questions.filter((q) => q.id !== questionId);
       setQuestions(newData);
-      setQuestionAlert({
+      setformAlert({
         status: "info",
         display: true,
         message: "質問が削除されました。",
       });
+      setModalTimeout();
+    }
+  };
+
+  const postComment = async () => {
+    console.log(commentInput);
+    if (!commentInput.content || !commentInput.questionId) return;
+    const param = {
+      content: commentInput.content,
+      questionId: commentInput.questionId,
+    };
+    try {
+      await RequestMapper.post("/comments", param);
+      setDisplayCommentModal(false);
+      setCommentInput({ content: "", questionId: -100 });
+      setformAlert({
+        status: "success",
+        display: true,
+        message: "コメントが追加されました",
+      });
+    } catch (e) {
+      console.log(e);
+      setformAlert({
+        status: "error",
+        display: true,
+        message: "コメントが作成できませんでした",
+      });
+    } finally {
       setModalTimeout();
     }
   };
@@ -239,6 +277,20 @@ const Questions = () => {
                   </Tag>
                 ))}
               </QuestionGenres>
+              <EditIcon
+                boxSize={"1.5rem"}
+                mr="0.5rem"
+                _hover={{ cursor: "pointer" }}
+                onClick={() => {
+                  setDisplayCommentModal(true),
+                    setCommentInput((prevValue) => ({
+                      ...prevValue,
+                      questionId: q.id,
+                    }));
+                }}
+              />
+              <ChatIcon boxSize={"1.5rem"} mr="0.5rem" />
+              <span>{q.comments.length}</span>
               <DeleteIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
@@ -249,6 +301,7 @@ const Questions = () => {
           </QuestionCard>
         ))}
       </QuestionPage>
+      {/* 投稿のモーダル */}
       <Modal
         isOpen={displayQuestionModal}
         onClose={() => setDisplayQuestionModal(false)}
@@ -323,11 +376,62 @@ const Questions = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {questionAlert.display && (
+
+      {/* コメントのモーダル */}
+      <Modal
+        isOpen={displayCommentModal}
+        onClose={() => setDisplayCommentModal(false)}
+        autoFocus
+        isCentered
+        size="3xl"
+      >
+        <ModalOverlay />
+        <ModalContent height={"60%"}>
+          <ModalBody>
+            <FormControl>
+              <Textarea
+                minHeight={"200px"}
+                mb="4"
+                placeholder="内容を入力"
+                isRequired
+                size="lg"
+                value={commentInput.content}
+                onChange={(e) =>
+                  setCommentInput((prevValue) => ({
+                    ...prevValue,
+                    content: e.target.value,
+                  }))
+                }
+              />
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={postComment}
+              disabled={!commentInput.content}
+            >
+              投稿する
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setDisplayCommentModal(false),
+                  setCommentInput({ content: "", questionId: -100 });
+              }}
+            >
+              キャンセル
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      {formAlert.display && (
         <AlertWrapper>
-          <Alert w={"90%"} status={questionAlert.status}>
+          <Alert w={"90%"} status={formAlert.status}>
             <AlertIcon />
-            <AlertTitle>{questionAlert.message}</AlertTitle>
+            <AlertTitle>{formAlert.message}</AlertTitle>
           </Alert>
         </AlertWrapper>
       )}
