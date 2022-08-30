@@ -164,6 +164,11 @@ const Questions = () => {
         display: true,
         message: "質問が作成されました！",
       });
+      setQuestionInput({
+        title: "",
+        content: "",
+        genres: [],
+      });
     } catch (e) {
       setQuestionAlert({
         status: "error",
@@ -192,12 +197,11 @@ const Questions = () => {
   };
 
   const deleteQuestion = async (questionId) => {
-    console.log(questionId);
     if (!questionId) return;
     const result = await RequestMapper.delete("/questions", { id: questionId });
     if (result) {
-      const newData = questions.filter((q) => q.id !== questionId)
-      setQuestions(newData)
+      const newData = questions.filter((q) => q.id !== questionId);
+      setQuestions(newData);
       setQuestionAlert({
         status: "info",
         display: true,
