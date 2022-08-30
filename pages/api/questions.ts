@@ -18,6 +18,7 @@ export default async function handler(
 async function findQuestions() {
   return await prisma.question.findMany({
     include: { genres: true },
+    orderBy: { id: "desc" },
   });
 }
 
