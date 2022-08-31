@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../lib/prisma";
 
-const methodHandler = {
+interface handerTypes {
+  [key: string]: Function;
+}
+
+const methodHandler: handerTypes = {
   GET: findUsers,
   POST: createUser,
 };
@@ -10,7 +14,9 @@ export default async function hander(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const result = await methodHandler[req.method](req);
+  if (!req || !req.method) return;
+  const key: string = req.method;
+  const result = await methodHandler[key](req);
   res.json(result);
 }
 
@@ -25,7 +31,7 @@ async function findUsers() {
   });
 }
 
-async function createUser(req) {
+async function createUser(req: NextApiRequest) {
   const { name, email } = req.body;
   return await prisma.user.create({
     data: {

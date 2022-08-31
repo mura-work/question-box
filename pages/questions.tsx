@@ -190,7 +190,10 @@ const Questions = () => {
     }
   };
 
-  const changeInputGenre = (e, genreId: number) => {
+  const changeInputGenre = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    genreId: number
+  ) => {
     if (e.target.checked) {
       const targetGenre = genres.find((g) => g.id === genreId);
       if (!targetGenre) return;
@@ -206,7 +209,7 @@ const Questions = () => {
     }
   };
 
-  const deleteQuestion = async (questionId) => {
+  const deleteQuestion = async (questionId: number) => {
     if (!questionId) return;
     const result = await RequestMapper.delete("/questions", { id: questionId });
     if (result) {
@@ -249,6 +252,8 @@ const Questions = () => {
     }
   };
 
+  const openComments = (questionId: Number) => {};
+
   return (
     <Layout>
       <Heading textAlign="center" mb="10">
@@ -269,7 +274,7 @@ const Questions = () => {
                 {q.genres.map((g) => (
                   <Tag
                     key={g.id}
-                    colorScheme={TAG_COLOR_CODE[g.id]}
+                    colorScheme={TAG_COLOR_CODE[g.id]} // TODO: タグ追加の作成 作成時に文字列の値を追加できるようにする
                     variant="solid"
                     mr="1"
                   >
@@ -289,7 +294,12 @@ const Questions = () => {
                     }));
                 }}
               />
-              <ChatIcon boxSize={"1.5rem"} mr="0.5rem" />
+              <ChatIcon
+                boxSize={"1.5rem"}
+                mr="0.5rem"
+                _hover={{ cursor: "pointer" }}
+                onClick={() => openComments(q.id)}
+              />
               <span>{q.comments.length}</span>
               <DeleteIcon
                 boxSize={"1.5rem"}
@@ -392,7 +402,7 @@ const Questions = () => {
               <Textarea
                 minHeight={"200px"}
                 mb="4"
-                placeholder="内容を入力"
+                placeholder="コメントを入力"
                 isRequired
                 size="lg"
                 value={commentInput.content}
