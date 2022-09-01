@@ -93,6 +93,14 @@ const QuestionDetail = () => {
     init();
   }, [router]);
 
+  const deleteQuestion = async () => {
+    if (!questionId) return;
+    const result = await RequestMapper.delete("/questions", { id: questionId });
+    if (result) {
+      router.push("/questions");
+    }
+  };
+
   return (
     <Layout>
       <div className="question-detaill">
@@ -115,7 +123,7 @@ const QuestionDetail = () => {
                 </Tag>
               ))}
             </QuestionGenres>
-            <EditIcon
+            {/* <EditIcon
               boxSize={"1.5rem"}
               mr="0.5rem"
               _hover={{ cursor: "pointer" }}
@@ -126,19 +134,12 @@ const QuestionDetail = () => {
                     questionId: question.id,
                   }));
               }}
-            />
-            <ChatIcon
-              boxSize={"1.5rem"}
-              mr="0.5rem"
-              _hover={{ cursor: "pointer" }}
-              onClick={() => openComments(q.id)}
-            />
-            <span>{question.comments.length}</span>
+            /> */}
             <DeleteIcon
               boxSize={"1.5rem"}
               mr="0.5rem"
               _hover={{ cursor: "pointer" }}
-              onClick={() => deleteQuestion(q.id)}
+              onClick={deleteQuestion}
             />
           </QuestionCardFooter>
         </QuestionCard>

@@ -33,6 +33,7 @@ model Genre {
   name      String
   isActive  Boolean  @default(true)
   questions Question[]
+  color     String?
 }
 
 model Question {

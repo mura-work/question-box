@@ -46,7 +46,7 @@ type Question = {
 const TAG_COLOR_CODE = {
   1: "twitter",
   2: "facebook",
-  3: "telegram",
+  3: "purple",
   4: "whatsapp",
   5: "messenger",
 };

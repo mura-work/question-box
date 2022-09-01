@@ -1,30 +1,31 @@
 import { PrismaClient, Prisma } from "@prisma/client";
+import { QuestionDummy } from "./dummy/questions.dummy";
+import { GenresDummy } from "./dummy/genres.dummy";
 
 const prisma = new PrismaClient();
 
-const questionData = [
-  {
-    title: "人生相談",
-    content: "人生に対してやる気がありません。どうすればよろしいでしょうか。",
-  },
-  {
-    title: "仕事について",
-    content: "定職につけません。どうすればよろしいでしょうか。",
-  },
-  {
-    title: "家族について",
-    content: "両親共に認知症で介護が厳しいです。どうすればよろしいでしょうか。",
-  },
-];
-
 async function main() {
-  console.log(`Start seeding ...`);
-  for (const q of questionData) {
-    const question = await prisma.question.create({
-      data: q,
+  console.log("ジャンルのインサート");
+  for (const g of GenresDummy) {
+    await prisma.genre.create({
+      data: g,
     });
   }
-  console.log(`Seeding finished`);
+  console.log(`質問のインサート`);
+  for (const q of QuestionDummy) {
+    await prisma.question.create({
+      data: {
+        title: q.title,
+        content: q.content,
+        genres: {
+          connect: q.genres,
+        },
+        comments: {
+          create: q.comments,
+        },
+      },
+    });
+  }
 }
 
 main()
