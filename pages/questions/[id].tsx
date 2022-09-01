@@ -9,6 +9,7 @@ import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 type Genre = {
   id: number;
   name: string;
+  color: string;
 };
 
 type Comment = {
@@ -22,14 +23,6 @@ type Question = {
   content: string;
   genres: Genre[];
   comments: Comment[];
-};
-
-const TAG_COLOR_CODE = {
-  1: "twitter",
-  2: "facebook",
-  3: "telegram",
-  4: "whatsapp",
-  5: "messenger",
 };
 
 const QuestionPage = styled.div`
@@ -113,12 +106,7 @@ const QuestionDetail = () => {
           <QuestionCardFooter>
             <QuestionGenres>
               {question.genres.map((g) => (
-                <Tag
-                  key={g.id}
-                  colorScheme={TAG_COLOR_CODE[g.id]} // TODO: タグ追加の作成 作成時に文字列の値を追加できるようにする
-                  variant="solid"
-                  mr="1"
-                >
+                <Tag key={g.id} bg={g.color} variant="solid" mr="1">
                   {g.name}
                 </Tag>
               ))}

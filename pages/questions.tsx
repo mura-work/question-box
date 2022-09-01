@@ -28,6 +28,7 @@ import { useRouter } from "next/router";
 type Genre = {
   id: number;
   name: string;
+  color: string;
 };
 
 type Comment = {
@@ -41,14 +42,6 @@ type Question = {
   content: string;
   genres: Genre[];
   comments: Comment[];
-};
-
-const TAG_COLOR_CODE = {
-  1: "twitter",
-  2: "facebook",
-  3: "purple",
-  4: "whatsapp",
-  5: "messenger",
 };
 
 const QuestionPage = styled.div`
@@ -285,9 +278,9 @@ const Questions = () => {
                 {q.genres.map((g) => (
                   <Tag
                     key={g.id}
-                    colorScheme={TAG_COLOR_CODE[g.id]} // TODO: タグ追加の作成 作成時に文字列の値を追加できるようにする
                     variant="solid"
                     mr="1"
+                    bg={g.color}
                   >
                     {g.name}
                   </Tag>
