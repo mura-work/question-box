@@ -3,7 +3,19 @@ import Layout from "../../components/Layout";
 import RequestMapper from "../../lib/RequestMapper";
 import styled from "styled-components";
 import { useRouter } from "next/router";
-import { Heading, Tag } from "@chakra-ui/react";
+import {
+  Heading,
+  Tag,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalFooter,
+  ModalBody,
+  FormControl,
+  FormErrorMessage,
+  Textarea,
+  Button,
+} from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 
 type Genre = {
@@ -25,10 +37,10 @@ type Question = {
   comments: Comment[];
 };
 
-const QuestionPage = styled.div`
-  width: 40%;
-  margin: 0 auto;
-`;
+type commnetInputs = {
+  content: string;
+  questionId: number;
+};
 
 const QuestionCard = styled.div`
   height: 300px;
@@ -61,6 +73,47 @@ const QuestionCardFooter = styled.div`
   justify-content: space-between;
 `;
 
+const QuestionComments = styled.div`
+  margin-top: 40px;
+  display: flex;
+  flex-flow: column;
+  align-items: end;
+`;
+
+const CommentCard = styled.div`
+  min-height: 100px;
+  border: 1px solid black;
+  border-radius: 4%;
+  margin: 20px 0;
+  padding: 4px;
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  background-color: #caebf2;
+  width: 80%;
+`;
+
+const CommentContent = styled.div`
+  background-color: white;
+  height: 100%;
+  min-height: 48px;
+  border-radius: 4%;
+  margin: 8px 4px;
+  font-family: Hannotate SC;
+`;
+
+const CommentCardFooter = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: end;
+`;
+
+const CommentFormOpenButton = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const QuestionDetail = () => {
   const [question, setQuestion] = useState<Question>({
     id: -100,
@@ -68,6 +121,12 @@ const QuestionDetail = () => {
     content: "",
     genres: [],
     comments: [],
+  });
+  const [displayCommentModal, setDisplayCommentModal] =
+    useState<boolean>(false);
+  const [commentInput, setCommentInput] = useState<commnetInputs>({
+    content: "",
+    questionId: -100,
   });
 
   const router = useRouter();
@@ -79,12 +138,39 @@ const QuestionDetail = () => {
     const init = async () => {
       if (router.isReady && questionId) {
         const result = await RequestMapper.get(`/questions/${questionId}`);
+				console.log(result)
         result && setQuestion(result);
-        console.log(result);
       }
     };
     init();
   }, [router]);
+
+  const postComment = async () => {
+    if (!commentInput.content || !questionId) return;
+    const param = {
+      content: commentInput.content,
+      questionId: questionId,
+    };
+    try {
+      await RequestMapper.post("/comments", param);
+      setDisplayCommentModal(false);
+      setCommentInput({ content: "", questionId: -100 });
+      // setformAlert({
+      //   status: "success",
+      //   display: true,
+      //   message: "コメントが追加されました",
+      // });
+    } catch (e) {
+      console.log(e);
+      // setformAlert({
+      //   status: "error",
+      //   display: true,
+      //   message: "コメントが作成できませんでした",
+      // });
+    } finally {
+      // setModalTimeout();
+    }
+  };
 
   const deleteQuestion = async () => {
     if (!questionId) return;
@@ -94,10 +180,11 @@ const QuestionDetail = () => {
     }
   };
 
+  const deleteComment = async () => {};
+
   return (
     <Layout>
       <div className="question-detaill">
-        <h1>詳細</h1>
         <QuestionCard key={question.id}>
           <Heading className="question-title" size="lg" p="1">
             {question.title}
@@ -132,6 +219,74 @@ const QuestionDetail = () => {
           </QuestionCardFooter>
         </QuestionCard>
       </div>
+      <CommentFormOpenButton>
+        <Button colorScheme="twitter" onClick={() => setDisplayCommentModal(true)}>コメントを新しく追加する</Button>
+      </CommentFormOpenButton>
+      <QuestionComments>
+        {question.comments.map((c) => (
+          <CommentCard key={c.id}>
+            <CommentContent>{c.content}</CommentContent>
+            <CommentCardFooter>
+              <DeleteIcon
+                boxSize={"1.5rem"}
+                mr="0.5rem"
+                _hover={{ cursor: "pointer" }}
+                onClick={deleteComment}
+              />
+            </CommentCardFooter>
+          </CommentCard>
+        ))}
+      </QuestionComments>
+      {/* コメントのモーダル */}
+      <Modal
+        isOpen={displayCommentModal}
+        onClose={() => setDisplayCommentModal(false)}
+        autoFocus
+        isCentered
+        size="3xl"
+      >
+        <ModalOverlay />
+        <ModalContent height={"60%"}>
+          <ModalBody>
+            <FormControl>
+              <Textarea
+                minHeight={"200px"}
+                mb="4"
+                placeholder="コメントを入力"
+                isRequired
+                size="lg"
+                value={commentInput.content}
+                onChange={(e) =>
+                  setCommentInput((prevValue) => ({
+                    ...prevValue,
+                    content: e.target.value,
+                  }))
+                }
+              />
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button
+              colorScheme="blue"
+              mr={3}
+              onClick={postComment}
+              disabled={!commentInput.content}
+            >
+              投稿する
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setDisplayCommentModal(false),
+                  setCommentInput({ content: "", questionId: -100 });
+              }}
+            >
+              キャンセル
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Layout>
   );
 };

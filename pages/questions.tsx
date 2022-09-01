@@ -104,11 +104,6 @@ type alertTypes = {
   status: alertStatusTypes;
 };
 
-type commnetInputs = {
-  content: string;
-  questionId: number;
-};
-
 const Questions = () => {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -124,12 +119,6 @@ const Questions = () => {
     display: false,
     message: "",
     status: "success",
-  });
-  const [displayCommentModal, setDisplayCommentModal] =
-    useState<boolean>(false);
-  const [commentInput, setCommentInput] = useState<commnetInputs>({
-    content: "",
-    questionId: -100,
   });
 
   useEffect(() => {
@@ -222,34 +211,6 @@ const Questions = () => {
     }
   };
 
-  const postComment = async () => {
-    console.log(commentInput);
-    if (!commentInput.content || !commentInput.questionId) return;
-    const param = {
-      content: commentInput.content,
-      questionId: commentInput.questionId,
-    };
-    try {
-      await RequestMapper.post("/comments", param);
-      setDisplayCommentModal(false);
-      setCommentInput({ content: "", questionId: -100 });
-      setformAlert({
-        status: "success",
-        display: true,
-        message: "コメントが追加されました",
-      });
-    } catch (e) {
-      console.log(e);
-      setformAlert({
-        status: "error",
-        display: true,
-        message: "コメントが作成できませんでした",
-      });
-    } finally {
-      setModalTimeout();
-    }
-  };
-
   const openComments = (
     e: React.MouseEvent<SVGElement, MouseEvent>,
     questionId: Number
@@ -276,17 +237,12 @@ const Questions = () => {
             <QuestionCardFooter>
               <QuestionGenres>
                 {q.genres.map((g) => (
-                  <Tag
-                    key={g.id}
-                    variant="solid"
-                    mr="1"
-                    bg={g.color}
-                  >
+                  <Tag key={g.id} variant="solid" mr="1" bg={g.color}>
                     {g.name}
                   </Tag>
                 ))}
               </QuestionGenres>
-              <EditIcon
+              {/* <EditIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
                 _hover={{ cursor: "pointer" }}
@@ -298,7 +254,7 @@ const Questions = () => {
                       questionId: q.id,
                     }));
                 }}
-              />
+              /> */}
               <ChatIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
@@ -385,57 +341,6 @@ const Questions = () => {
             <Button
               variant="ghost"
               onClick={() => setDisplayQuestionModal(false)}
-            >
-              キャンセル
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      {/* コメントのモーダル */}
-      <Modal
-        isOpen={displayCommentModal}
-        onClose={() => setDisplayCommentModal(false)}
-        autoFocus
-        isCentered
-        size="3xl"
-      >
-        <ModalOverlay />
-        <ModalContent height={"60%"}>
-          <ModalBody>
-            <FormControl>
-              <Textarea
-                minHeight={"200px"}
-                mb="4"
-                placeholder="コメントを入力"
-                isRequired
-                size="lg"
-                value={commentInput.content}
-                onChange={(e) =>
-                  setCommentInput((prevValue) => ({
-                    ...prevValue,
-                    content: e.target.value,
-                  }))
-                }
-              />
-            </FormControl>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={postComment}
-              disabled={!commentInput.content}
-            >
-              投稿する
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setDisplayCommentModal(false),
-                  setCommentInput({ content: "", questionId: -100 });
-              }}
             >
               キャンセル
             </Button>
