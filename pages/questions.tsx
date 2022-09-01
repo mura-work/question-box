@@ -23,6 +23,7 @@ import {
   AlertTitle,
 } from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
+import { useRouter } from "next/router";
 
 type Genre = {
   id: number;
@@ -116,6 +117,7 @@ type commnetInputs = {
 };
 
 const Questions = () => {
+  const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
   const [questionInput, setQuestionInput] = useState<Inputs>({
@@ -209,7 +211,10 @@ const Questions = () => {
     }
   };
 
-  const deleteQuestion = async (questionId: number) => {
+  const deleteQuestion = async (
+    e: React.MouseEvent<SVGElement, MouseEvent>,
+    questionId: number
+  ) => {
     if (!questionId) return;
     const result = await RequestMapper.delete("/questions", { id: questionId });
     if (result) {
@@ -252,7 +257,13 @@ const Questions = () => {
     }
   };
 
-  const openComments = (questionId: Number) => {};
+  const openComments = (
+    e: React.MouseEvent<SVGElement, MouseEvent>,
+    questionId: Number
+  ) => {
+    e.preventDefault();
+    router.push(`/questions/${questionId}`);
+  };
 
   return (
     <Layout>
@@ -286,7 +297,8 @@ const Questions = () => {
                 boxSize={"1.5rem"}
                 mr="0.5rem"
                 _hover={{ cursor: "pointer" }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
                   setDisplayCommentModal(true),
                     setCommentInput((prevValue) => ({
                       ...prevValue,
@@ -298,14 +310,14 @@ const Questions = () => {
                 boxSize={"1.5rem"}
                 mr="0.5rem"
                 _hover={{ cursor: "pointer" }}
-                onClick={() => openComments(q.id)}
+                onClick={(e) => openComments(e, q.id)}
               />
               <span>{q.comments.length}</span>
               <DeleteIcon
                 boxSize={"1.5rem"}
                 mr="0.5rem"
                 _hover={{ cursor: "pointer" }}
-                onClick={() => deleteQuestion(q.id)}
+                onClick={(e) => deleteQuestion(e, q.id)}
               />
             </QuestionCardFooter>
           </QuestionCard>
