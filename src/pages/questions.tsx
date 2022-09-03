@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import Layout from "../components/Layout";
-import RequestMapper from "../lib/RequestMapper";
+import Layout from "@/components/Layout";
+import RequestMapper from "@/lib/RequestMapper";
 import styled from "styled-components";
 import {
   Heading,
@@ -18,12 +18,11 @@ import {
   Textarea,
   Stack,
   Checkbox,
-  Alert,
-  AlertIcon,
-  AlertTitle,
 } from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 import { useRouter } from "next/router";
+import AlertModal from "@/components/Alert";
+import { useDisclosure } from "@/hooks/useDisclosure";
 
 type Genre = {
   id: number;
@@ -80,16 +79,6 @@ const QuestionCardFooter = styled.div`
   justify-content: space-between;
 `;
 
-const AlertWrapper = styled.div`
-  width: 100%;
-  position: fixed;
-  top: 90%;
-  min-width: 400px;
-  margin-left: -2rem;
-  display: flex;
-  justify-content: center;
-`;
-
 type Inputs = {
   title: string;
   content: string;
@@ -99,7 +88,7 @@ type Inputs = {
 type alertStatusTypes = "info" | "warning" | "success" | "error";
 
 type alertTypes = {
-  display: boolean;
+  isOpen: boolean;
   message: string;
   status: alertStatusTypes;
 };
@@ -116,10 +105,11 @@ const Questions = () => {
   const [displayQuestionModal, setDisplayQuestionModal] =
     useState<boolean>(false);
   const [formAlert, setformAlert] = useState<alertTypes>({
-    display: false,
+    isOpen: false,
     message: "",
     status: "success",
   });
+  const { close, open, isOpen } = useDisclosure();
 
   useEffect(() => {
     const initData = async () => {
@@ -155,7 +145,7 @@ const Questions = () => {
       setDisplayQuestionModal(false);
       setformAlert({
         status: "success",
-        display: true,
+        isOpen: true,
         message: "質問が作成されました！",
       });
       setQuestionInput({
@@ -166,7 +156,7 @@ const Questions = () => {
     } catch (e) {
       setformAlert({
         status: "error",
-        display: true,
+        isOpen: true,
         message: "質問が作成できませんでした",
       });
     } finally {
@@ -204,7 +194,7 @@ const Questions = () => {
       setQuestions(newData);
       setformAlert({
         status: "info",
-        display: true,
+        isOpen: true,
         message: "質問が削除されました。",
       });
       setModalTimeout();
@@ -347,14 +337,14 @@ const Questions = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      {formAlert.display && (
-        <AlertWrapper>
-          <Alert w={"90%"} status={formAlert.status}>
-            <AlertIcon />
-            <AlertTitle>{formAlert.message}</AlertTitle>
-          </Alert>
-        </AlertWrapper>
-      )}
+      <AlertModal
+        status={formAlert.status}
+        width="90%"
+        isOpen={formAlert.isOpen}
+        onClose={() => (formAlert.isOpen = false)}
+      >
+        {formAlert.message}
+      </AlertModal>
     </Layout>
   );
 };

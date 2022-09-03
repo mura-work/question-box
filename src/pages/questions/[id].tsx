@@ -114,6 +114,14 @@ const CommentFormOpenButton = styled.div`
   justify-content: center;
 `;
 
+const NotExistComments = styled.div`
+  width: 100%;
+  font-size: 24px;
+  text-align: center;
+  font-family: Hiragino Sans;
+  margin-top: 24px;
+`;
+
 const QuestionDetail = () => {
   const [question, setQuestion] = useState<Question>({
     id: -100,
@@ -138,7 +146,6 @@ const QuestionDetail = () => {
     const init = async () => {
       if (router.isReady && questionId) {
         const result = await RequestMapper.get(`/questions/${questionId}`);
-				console.log(result)
         result && setQuestion(result);
       }
     };
@@ -152,14 +159,18 @@ const QuestionDetail = () => {
       questionId: questionId,
     };
     try {
-      await RequestMapper.post("/comments", param);
-      setDisplayCommentModal(false);
-      setCommentInput({ content: "", questionId: -100 });
-      // setformAlert({
-      //   status: "success",
-      //   display: true,
-      //   message: "コメントが追加されました",
-      // });
+      const result = await RequestMapper.post("/comments", param);
+      if (result.status === 200) {
+        setDisplayCommentModal(false);
+        setCommentInput({ content: "", questionId: -100 });
+        const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
+        newQuestion && setQuestion(newQuestion);
+        // setformAlert({
+        //   status: "success",
+        //   display: true,
+        //   message: "コメントが追加されました",
+        // });
+      }
     } catch (e) {
       console.log(e);
       // setformAlert({
@@ -180,7 +191,30 @@ const QuestionDetail = () => {
     }
   };
 
-  const deleteComment = async () => {};
+  const deleteComment = async (id: number) => {
+    if (!id) return;
+    try {
+      const result = await RequestMapper.delete("/comments", { id });
+      if (result.status === 200) {
+        const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
+        newQuestion && setQuestion(newQuestion);
+        // setformAlert({
+        //   status: "success",
+        //   display: true,
+        //   message: "コメントが追加されました",
+        // });
+      }
+    } catch (e) {
+			console.log(e);
+      // setformAlert({
+      //   status: "error",
+      //   display: true,
+      //   message: "コメントが作成できませんでした",
+      // });
+		} finally {
+			// setModalTimeout();
+		}
+  };
 
   return (
     <Layout>
@@ -220,22 +254,34 @@ const QuestionDetail = () => {
         </QuestionCard>
       </div>
       <CommentFormOpenButton>
-        <Button colorScheme="twitter" onClick={() => setDisplayCommentModal(true)}>コメントを新しく追加する</Button>
+        <Button
+          colorScheme="twitter"
+          onClick={() => setDisplayCommentModal(true)}
+        >
+          コメントを新しく追加する
+        </Button>
       </CommentFormOpenButton>
       <QuestionComments>
-        {question.comments.map((c) => (
-          <CommentCard key={c.id}>
-            <CommentContent>{c.content}</CommentContent>
-            <CommentCardFooter>
-              <DeleteIcon
-                boxSize={"1.5rem"}
-                mr="0.5rem"
-                _hover={{ cursor: "pointer" }}
-                onClick={deleteComment}
-              />
-            </CommentCardFooter>
-          </CommentCard>
-        ))}
+        {question.comments.length === 0 ? (
+          <NotExistComments>
+            ---------------------------- コメントはまだありません
+            ----------------------------
+          </NotExistComments>
+        ) : (
+          question.comments.map((c) => (
+            <CommentCard key={c.id}>
+              <CommentContent>{c.content}</CommentContent>
+              <CommentCardFooter>
+                <DeleteIcon
+                  boxSize={"1.5rem"}
+                  mr="0.5rem"
+                  _hover={{ cursor: "pointer" }}
+                  onClick={() => deleteComment(c.id)}
+                />
+              </CommentCardFooter>
+            </CommentCard>
+          ))
+        )}
       </QuestionComments>
       {/* コメントのモーダル */}
       <Modal
