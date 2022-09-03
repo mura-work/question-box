@@ -35,13 +35,13 @@ const Users = (props: Props) => {
     fetchData();
   }, []);
 
-  const deleteUser = async (id) => {
-    const result = await RequestMapper.delete('/users/' + id)
+  const deleteUser = async (id: number) => {
+    const result = await RequestMapper.delete("/users", { id });
     if (result.status === 200) {
-      const newUsers = users.filter((user) => user.id !== id)
-      setUsers(newUsers)
+      const newUsers = users.filter((user) => user.id !== id);
+      setUsers(newUsers);
     }
-  }
+  };
 
   return (
     <Layout>

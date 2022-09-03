@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma";
+import prisma, { Genre, Question } from "../../../lib/prisma";
 
-const methodHandler = {
+interface handerTypes {
+  [key: string]: Function;
+}
+
+const methodHandler: handerTypes = {
   GET: findQuestions,
   POST: createQuestion,
   DELETE: deleteQuestion,
@@ -11,7 +15,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const result = await methodHandler[req.method](req);
+  if (!req || !req.method) return;
+  const key: string = req.method;
+  const result = await methodHandler[key](req);
   res.json(result);
 }
 
@@ -22,20 +28,20 @@ async function findQuestions() {
   });
 }
 
-async function createQuestion(req) {
+async function createQuestion(req: NextApiRequest) {
   const { title, content } = req.body;
   return await prisma.question.create({
     data: {
       title,
       content,
       genres: {
-        connect: req.body.genres.map((g) => ({ id: g.id })),
+        connect: req.body.genres.map((g: Genre) => ({ id: g.id })),
       },
     },
   });
 }
 
-async function deleteQuestion(req) {
+async function deleteQuestion(req: NextApiRequest) {
   const { id } = req.body;
   return await prisma.question.delete({
     where: { id: Number(id) },

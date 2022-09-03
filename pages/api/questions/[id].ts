@@ -1,20 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 
-type Genre = {
-  id: number;
-  createdAt: Date;
-  updatedAt: Date;
-  name: string;
-  isActive: boolean;
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const result: Genre[] = await prisma.genre.findMany({
-    where: { isActive: true },
+  if (!req.query.id) return;
+  const id = req.query.id;
+  const result = await prisma.question.findUnique({
+    where: { id: Array.isArray(id) ? Number(id[0]) : Number(id) },
+		include: { genres: true, comments: true },
   });
   res.json(result);
 }

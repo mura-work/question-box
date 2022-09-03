@@ -50,7 +50,7 @@ const Posts = () => {
     init();
   }, []);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: Inputs) => {
 		if (!data.title || !data.authorId) return
 
 		const result = await RequestMapper.post("/posts", data)
@@ -68,11 +68,11 @@ const Posts = () => {
           <form onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label>title：</label>
-              <input name="title" defaultValue="" {...register("title")} />
+              <input defaultValue="" {...register("title")} />
             </div>
             <div>
               <label>content：</label>
-              <input name="content" {...register("content")} />
+              <input {...register("content")} />
             </div>
             <div>
               <label>authorId：</label>
