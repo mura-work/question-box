@@ -17,6 +17,8 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
+import AlertModal from "@/components/Alert";
+import { AlertTypes } from "@/types/index";
 
 type Genre = {
   id: number;
@@ -136,6 +138,12 @@ const QuestionDetail = () => {
     content: "",
     questionId: -100,
   });
+  const [alert, setAlert] = useState<AlertTypes>({
+    displayAlert: false,
+    message: "",
+    status: "success",
+  });
+
 
   const router = useRouter();
   const questionId: number | undefined = router?.query?.id
@@ -165,21 +173,19 @@ const QuestionDetail = () => {
         setCommentInput({ content: "", questionId: -100 });
         const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
         newQuestion && setQuestion(newQuestion);
-        // setformAlert({
-        //   status: "success",
-        //   display: true,
-        //   message: "コメントが追加されました",
-        // });
+        setAlert({
+          status: "success",
+          displayAlert: true,
+          message: "コメントが追加されました",
+        });
       }
     } catch (e) {
       console.log(e);
-      // setformAlert({
-      //   status: "error",
-      //   display: true,
-      //   message: "コメントが作成できませんでした",
-      // });
-    } finally {
-      // setModalTimeout();
+      setAlert({
+        status: "error",
+        displayAlert: true,
+        message: "コメントが作成できませんでした",
+      });
     }
   };
 
@@ -198,22 +204,28 @@ const QuestionDetail = () => {
       if (result.status === 200) {
         const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
         newQuestion && setQuestion(newQuestion);
-        // setformAlert({
-        //   status: "success",
-        //   display: true,
-        //   message: "コメントが追加されました",
-        // });
+        setAlert({
+          status: "info",
+          displayAlert: true,
+          message: "コメントが削除されました",
+        });
       }
     } catch (e) {
 			console.log(e);
-      // setformAlert({
-      //   status: "error",
-      //   display: true,
-      //   message: "コメントが作成できませんでした",
-      // });
-		} finally {
-			// setModalTimeout();
+      setAlert({
+        status: "error",
+        displayAlert: true,
+        message: "コメントが削除できませんでした",
+      });
 		}
+  };
+
+  const initalizeFormAlert = () => {
+    setAlert({
+      displayAlert: false,
+      message: "",
+      status: "success",
+    });
   };
 
   return (
@@ -333,6 +345,14 @@ const QuestionDetail = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <AlertModal
+        status={alert.status}
+        width="90%"
+        displayAlert={alert.displayAlert}
+        onClose={initalizeFormAlert}
+      >
+        {alert.message}
+      </AlertModal>
     </Layout>
   );
 };

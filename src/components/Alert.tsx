@@ -45,7 +45,7 @@ const AlertModal = (props: PropsType) => {
       <Alert w={width} status={status}>
         <AlertIcon />
         <AlertTitle>{message}</AlertTitle>
-        <CloseButton onClick={closeAlert} />
+        <CloseButton onClick={closeAlert} ml="auto" />
       </Alert>
     </AlertWrapper>
   );

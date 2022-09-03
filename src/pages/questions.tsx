@@ -22,6 +22,7 @@ import {
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 import { useRouter } from "next/router";
 import AlertModal from "@/components/Alert";
+import { AlertTypes } from "@/types/index";
 
 type Genre = {
   id: number;
@@ -84,14 +85,6 @@ type Inputs = {
   genres: Genre[];
 };
 
-type alertStatusTypes = "info" | "warning" | "success" | "error";
-
-type alertTypes = {
-  displayAlert: boolean;
-  message: string;
-  status: alertStatusTypes;
-};
-
 const Questions = () => {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -103,7 +96,7 @@ const Questions = () => {
   });
   const [displayQuestionModal, setDisplayQuestionModal] =
     useState<boolean>(false);
-  const [formAlert, setformAlert] = useState<alertTypes>({
+  const [alert, setAlert] = useState<AlertTypes>({
     displayAlert: false,
     message: "",
     status: "success",
@@ -126,12 +119,12 @@ const Questions = () => {
   const displayModal = () => setDisplayQuestionModal(true);
 
   const initalizeFormAlert = () => {
-    setformAlert({
+    setAlert({
       displayAlert: false,
       message: "",
       status: "success",
-    })
-  }
+    });
+  };
 
   const createQuestion = async () => {
     try {
@@ -139,7 +132,7 @@ const Questions = () => {
       const questionData = await RequestMapper.get("/questions");
       setQuestions(questionData);
       setDisplayQuestionModal(false);
-      setformAlert({
+      setAlert({
         status: "success",
         displayAlert: true,
         message: "質問が作成されました！",
@@ -150,7 +143,7 @@ const Questions = () => {
         genres: [],
       });
     } catch (e) {
-      setformAlert({
+      setAlert({
         status: "error",
         displayAlert: true,
         message: "質問が作成できませんでした",
@@ -186,7 +179,7 @@ const Questions = () => {
     if (result) {
       const newData = questions.filter((q) => q.id !== questionId);
       setQuestions(newData);
-      setformAlert({
+      setAlert({
         status: "info",
         displayAlert: true,
         message: "質問が削除されました。",
@@ -331,12 +324,12 @@ const Questions = () => {
         </ModalContent>
       </Modal>
       <AlertModal
-        status={formAlert.status}
+        status={alert.status}
         width="90%"
-        displayAlert={formAlert.displayAlert}
+        displayAlert={alert.displayAlert}
         onClose={initalizeFormAlert}
       >
-        {formAlert.message}
+        {alert.message}
       </AlertModal>
     </Layout>
   );
