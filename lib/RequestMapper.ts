@@ -1,11 +1,36 @@
+// postの型定義
+type QuestionInput = {
+  title: string;
+  content: string;
+  genres: number[];
+};
+
+type CommentInput = {
+  content: string;
+};
+
+type PostBody = QuestionInput | CommentInput;
+
+// updateの型定義
+type QuestionUpdateInput = {
+  id: number;
+  title: string;
+  content: string;
+  genres: number[];
+  comments: Comment[];
+};
+
+type CommentUpdateInput = {
+  id: number;
+  content: string;
+};
+
+type UpdateBody = QuestionUpdateInput | CommentUpdateInput;
+
+// deleteの型定義
 type deleteParamType = {
   id: number;
 };
-
-// type RequestBaseTypes = {
-// 	url: string,
-// 	body:
-// }
 
 export default class RequestMapper {
   static async get(url: string) {
@@ -17,7 +42,7 @@ export default class RequestMapper {
     return data;
   }
 
-  static async post(url: string, body) {
+  static async post(url: string, body: PostBody) {
     return await fetch("/api" + url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -25,7 +50,7 @@ export default class RequestMapper {
     });
   }
 
-  static async update(url: string, body) {
+  static async update(url: string, body: UpdateBody) {
     return await fetch("/api" + url, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
