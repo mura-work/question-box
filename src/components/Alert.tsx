@@ -22,7 +22,7 @@ type PropsType = {
   onClose: () => void;
 };
 
-const AlertModal = (props: PropsType) => {
+export const AlertComponent = (props: PropsType) => {
   const { status, width, children: message, displayAlert, onClose } = props;
   const { close, open, isOpen } = useDisclosure();
 
@@ -50,5 +50,3 @@ const AlertModal = (props: PropsType) => {
     </AlertWrapper>
   );
 };
-
-export default AlertModal;
