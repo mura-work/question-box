@@ -6,14 +6,18 @@ import {
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
-  Td,
-  TableCaption,
-  TableContainer,
-	Tag,
+  Tag,
+  Button,
+  FormControl,
+  Input,
+  Text,
 } from "@chakra-ui/react";
+import { EditIcon } from "@chakra-ui/icons";
+import { ModalComponent } from "@/components/Modal";
+import { AlertComponent } from "@/components/Alert";
+import { AlertTypes } from "@/types/index";
 
 type Genre = {
   id: number;
@@ -23,6 +27,17 @@ type Genre = {
 
 const GenresList = () => {
   const [genres, setGenres] = useState<Genre[]>([]);
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [genreForm, setGenreForm] = useState<Genre>({
+    id: -100,
+    name: "",
+    color: "",
+  });
+  const [alert, setAlert] = useState<AlertTypes>({
+    displayAlert: false,
+    message: "",
+    status: "success",
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -31,6 +46,22 @@ const GenresList = () => {
     };
     init();
   }, []);
+
+  const editGenre = (genre: Genre) => {};
+
+  const initalizeFormAlert = () => {
+    setAlert({
+      displayAlert: false,
+      message: "",
+      status: "success",
+    });
+  };
+
+  const initializeGenreForm = () => {
+    setGenreForm({ id: -100, name: "", color: "" });
+  };
+
+  const updateGenre = () => {};
 
   return (
     <Layout>
@@ -42,6 +73,7 @@ const GenresList = () => {
               <Th>名称</Th>
               <Th>カラー</Th>
               <Th>表示例</Th>
+              <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -55,11 +87,71 @@ const GenresList = () => {
                     {g.name}
                   </Tag>
                 </Th>
+                <Th>
+                  <Button
+                    size="xs"
+                    colorScheme="twitter"
+                    onClick={() => {
+                      setGenreForm(g);
+                      setOpenModal(true);
+                    }}
+                  >
+                    変更
+                  </Button>
+                </Th>
               </Tr>
             ))}
           </Tbody>
         </Table>
       </div>
+      <ModalComponent
+        confirm={updateGenre}
+        cancel={() => {
+          setOpenModal(false), initializeGenreForm;
+        }}
+        displayModal={openModal}
+      >
+        <FormControl>
+          <Text mt="4" mb="2">
+            ジャンル名
+          </Text>
+          <Input
+            value={genreForm.name}
+            type="text"
+            placeholder="ジャンル名を入力"
+            isRequired
+            mb="4"
+            onChange={(e) =>
+              setGenreForm((prevState) => ({
+                ...prevState,
+                name: e.target.value,
+              }))
+            }
+          />
+          <Text mt="4" mb="2">
+            カラー
+          </Text>
+          <input
+            type="color"
+            value={genreForm.color}
+            onChange={(e) => {
+              setGenreForm((prevState) => ({
+                ...prevState,
+                color: e.target.value,
+              }));
+            }}
+          />
+					<Text>{genreForm.color}</Text>
+        </FormControl>
+      </ModalComponent>
+      <AlertComponent
+        status={alert.status}
+        width="90%"
+        displayAlert={alert.displayAlert}
+        onClose={initalizeFormAlert}
+      >
+        {alert.message}
+      </AlertComponent>
     </Layout>
   );
 };
