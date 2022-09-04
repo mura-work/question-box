@@ -10,24 +10,8 @@ const Header: React.FC = () => {
   return(
     <nav>
       <div className="left">
-        <Link href="/users">
-          <a className="bold" data-active={isActive('/users')}>
-            Users
-          </a>
-        </Link>
-        <Link href="/posts">
-          <a data-active={isActive('/posts')}>Posts</a>
-        </Link>
         <Link href="/questions">
           <a data-active={isActive('/questions')}>Questions</a>
-        </Link>
-      </div>
-      <div className="right">
-        <Link href="/signup">
-          <a data-active={isActive('/signup')}>Signup</a>
-        </Link>
-        <Link href="/signin">
-          <a data-active={isActive('/signin')}>Signin</a>
         </Link>
       </div>
       <style jsx>{`
@@ -53,16 +37,6 @@ const Header: React.FC = () => {
 
         a + a {
           margin-left: 1rem;
-        }
-
-        .right {
-          margin-left: auto;
-        }
-
-        .right a {
-          border: 1px solid black;
-          padding: 0.5rem 1rem;
-          border-radius: 3px;
         }
       `}</style>
     </nav>
