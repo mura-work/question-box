@@ -6,17 +6,15 @@ import { useRouter } from "next/router";
 import {
   Heading,
   Tag,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalFooter,
-  ModalBody,
   FormControl,
   FormErrorMessage,
   Textarea,
   Button,
 } from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
+import { AlertComponent } from "@/components/Alert";
+import { AlertTypes } from "@/types/index";
+import { ModalComponent } from "@/components/Modal";
 
 type Genre = {
   id: number;
@@ -130,11 +128,15 @@ const QuestionDetail = () => {
     genres: [],
     comments: [],
   });
-  const [displayCommentModal, setDisplayCommentModal] =
-    useState<boolean>(false);
+  const [openModal, setOpenModal] = useState<boolean>(false);
   const [commentInput, setCommentInput] = useState<commnetInputs>({
     content: "",
     questionId: -100,
+  });
+  const [alert, setAlert] = useState<AlertTypes>({
+    displayAlert: false,
+    message: "",
+    status: "success",
   });
 
   const router = useRouter();
@@ -161,25 +163,23 @@ const QuestionDetail = () => {
     try {
       const result = await RequestMapper.post("/comments", param);
       if (result.status === 200) {
-        setDisplayCommentModal(false);
+        setOpenModal(false);
         setCommentInput({ content: "", questionId: -100 });
         const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
         newQuestion && setQuestion(newQuestion);
-        // setformAlert({
-        //   status: "success",
-        //   display: true,
-        //   message: "コメントが追加されました",
-        // });
+        setAlert({
+          status: "success",
+          displayAlert: true,
+          message: "コメントが追加されました",
+        });
       }
     } catch (e) {
       console.log(e);
-      // setformAlert({
-      //   status: "error",
-      //   display: true,
-      //   message: "コメントが作成できませんでした",
-      // });
-    } finally {
-      // setModalTimeout();
+      setAlert({
+        status: "error",
+        displayAlert: true,
+        message: "コメントが作成できませんでした",
+      });
     }
   };
 
@@ -198,22 +198,28 @@ const QuestionDetail = () => {
       if (result.status === 200) {
         const newQuestion = await RequestMapper.get(`/questions/${questionId}`);
         newQuestion && setQuestion(newQuestion);
-        // setformAlert({
-        //   status: "success",
-        //   display: true,
-        //   message: "コメントが追加されました",
-        // });
+        setAlert({
+          status: "info",
+          displayAlert: true,
+          message: "コメントが削除されました",
+        });
       }
     } catch (e) {
-			console.log(e);
-      // setformAlert({
-      //   status: "error",
-      //   display: true,
-      //   message: "コメントが作成できませんでした",
-      // });
-		} finally {
-			// setModalTimeout();
-		}
+      console.log(e);
+      setAlert({
+        status: "error",
+        displayAlert: true,
+        message: "コメントが削除できませんでした",
+      });
+    }
+  };
+
+  const initalizeFormAlert = () => {
+    setAlert({
+      displayAlert: false,
+      message: "",
+      status: "success",
+    });
   };
 
   return (
@@ -237,7 +243,7 @@ const QuestionDetail = () => {
               mr="0.5rem"
               _hover={{ cursor: "pointer" }}
               onClick={() => {
-                setDisplayCommentModal(true),
+                setOpenModal(true),
                   setCommentInput((prevValue) => ({
                     ...prevValue,
                     questionId: question.id,
@@ -254,10 +260,7 @@ const QuestionDetail = () => {
         </QuestionCard>
       </div>
       <CommentFormOpenButton>
-        <Button
-          colorScheme="twitter"
-          onClick={() => setDisplayCommentModal(true)}
-        >
+        <Button colorScheme="twitter" onClick={() => setOpenModal(true)}>
           コメントを新しく追加する
         </Button>
       </CommentFormOpenButton>
@@ -283,56 +286,39 @@ const QuestionDetail = () => {
           ))
         )}
       </QuestionComments>
-      {/* コメントのモーダル */}
-      <Modal
-        isOpen={displayCommentModal}
-        onClose={() => setDisplayCommentModal(false)}
-        autoFocus
-        isCentered
-        size="3xl"
+      <ModalComponent
+        confirm={postComment}
+        cancel={() => {
+          setOpenModal(false),
+            setCommentInput({ content: "", questionId: -100 });
+        }}
+        displayModal={openModal}
       >
-        <ModalOverlay />
-        <ModalContent height={"60%"}>
-          <ModalBody>
-            <FormControl>
-              <Textarea
-                minHeight={"200px"}
-                mb="4"
-                placeholder="コメントを入力"
-                isRequired
-                size="lg"
-                value={commentInput.content}
-                onChange={(e) =>
-                  setCommentInput((prevValue) => ({
-                    ...prevValue,
-                    content: e.target.value,
-                  }))
-                }
-              />
-            </FormControl>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={postComment}
-              disabled={!commentInput.content}
-            >
-              投稿する
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setDisplayCommentModal(false),
-                  setCommentInput({ content: "", questionId: -100 });
-              }}
-            >
-              キャンセル
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+        <FormControl>
+          <Textarea
+            minHeight={"200px"}
+            mb="4"
+            placeholder="コメントを入力"
+            isRequired
+            size="lg"
+            value={commentInput.content}
+            onChange={(e) =>
+              setCommentInput((prevValue) => ({
+                ...prevValue,
+                content: e.target.value,
+              }))
+            }
+          />
+        </FormControl>
+      </ModalComponent>
+      <AlertComponent
+        status={alert.status}
+        width="90%"
+        displayAlert={alert.displayAlert}
+        onClose={initalizeFormAlert}
+      >
+        {alert.message}
+      </AlertComponent>
     </Layout>
   );
 };

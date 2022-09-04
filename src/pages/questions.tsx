@@ -4,7 +4,6 @@ import RequestMapper from "@/lib/RequestMapper";
 import styled from "styled-components";
 import {
   Heading,
-  Text,
   Tag,
   Button,
   Modal,
@@ -21,8 +20,9 @@ import {
 } from "@chakra-ui/react";
 import { DeleteIcon, ChatIcon, EditIcon } from "@chakra-ui/icons";
 import { useRouter } from "next/router";
-import AlertModal from "@/components/Alert";
-import { useDisclosure } from "@/hooks/useDisclosure";
+import { AlertComponent } from "@/components/Alert";
+import { AlertTypes } from "@/types/index";
+import { ModalComponent } from "@/components/Modal";
 
 type Genre = {
   id: number;
@@ -85,14 +85,6 @@ type Inputs = {
   genres: Genre[];
 };
 
-type alertStatusTypes = "info" | "warning" | "success" | "error";
-
-type alertTypes = {
-  isOpen: boolean;
-  message: string;
-  status: alertStatusTypes;
-};
-
 const Questions = () => {
   const router = useRouter();
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -102,14 +94,12 @@ const Questions = () => {
     content: "",
     genres: [],
   });
-  const [displayQuestionModal, setDisplayQuestionModal] =
-    useState<boolean>(false);
-  const [formAlert, setformAlert] = useState<alertTypes>({
-    isOpen: false,
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [alert, setAlert] = useState<AlertTypes>({
+    displayAlert: false,
     message: "",
     status: "success",
   });
-  const { close, open, isOpen } = useDisclosure();
 
   useEffect(() => {
     const initData = async () => {
@@ -125,16 +115,14 @@ const Questions = () => {
     initData();
   }, []);
 
-  const displayModal = () => setDisplayQuestionModal(true);
+  const displayModal = () => setOpenModal(true);
 
-  const setModalTimeout = () => {
-    const hideAlert = () => {
-      setformAlert((prevValue) => ({
-        ...prevValue,
-        display: false,
-      }));
-    };
-    setTimeout(hideAlert, 5000);
+  const initalizeFormAlert = () => {
+    setAlert({
+      displayAlert: false,
+      message: "",
+      status: "success",
+    });
   };
 
   const createQuestion = async () => {
@@ -142,10 +130,10 @@ const Questions = () => {
       await RequestMapper.post("/questions", questionInput);
       const questionData = await RequestMapper.get("/questions");
       setQuestions(questionData);
-      setDisplayQuestionModal(false);
-      setformAlert({
+      setOpenModal(false);
+      setAlert({
         status: "success",
-        isOpen: true,
+        displayAlert: true,
         message: "質問が作成されました！",
       });
       setQuestionInput({
@@ -154,13 +142,11 @@ const Questions = () => {
         genres: [],
       });
     } catch (e) {
-      setformAlert({
+      setAlert({
         status: "error",
-        isOpen: true,
+        displayAlert: true,
         message: "質問が作成できませんでした",
       });
-    } finally {
-      setModalTimeout();
     }
   };
 
@@ -192,12 +178,11 @@ const Questions = () => {
     if (result) {
       const newData = questions.filter((q) => q.id !== questionId);
       setQuestions(newData);
-      setformAlert({
+      setAlert({
         status: "info",
-        isOpen: true,
+        displayAlert: true,
         message: "質問が削除されました。",
       });
-      setModalTimeout();
     }
   };
 
@@ -262,89 +247,60 @@ const Questions = () => {
           </QuestionCard>
         ))}
       </QuestionPage>
-      {/* 投稿のモーダル */}
-      <Modal
-        isOpen={displayQuestionModal}
-        onClose={() => setDisplayQuestionModal(false)}
-        autoFocus
-        isCentered
-        size="3xl"
+      <ModalComponent
+        cancel={() => setOpenModal(false)}
+        confirm={createQuestion}
+        displayModal={openModal}
       >
-        <ModalOverlay />
-        <ModalContent height={"60%"}>
-          <ModalBody>
-            <FormControl>
-              <Input
-                value={questionInput.title}
-                type="text"
-                placeholder="題名を入力"
-                isRequired
-                my="4"
-                onChange={(e) =>
-                  setQuestionInput((prevState) => ({
-                    ...prevState,
-                    title: e.target.value,
-                  }))
-                }
-              />
-              <Textarea
-                minHeight={"200px"}
-                mb="4"
-                placeholder="内容を入力"
-                isRequired
-                size="lg"
-                value={questionInput.content}
-                onChange={(e) =>
-                  setQuestionInput((prevValue) => ({
-                    ...prevValue,
-                    content: e.target.value,
-                  }))
-                }
-              />
-              <Stack spacing={[1, 5]} direction={["column", "row"]}>
-                {genres.map((g) => (
-                  <Checkbox
-                    value={g.id}
-                    key={g.id}
-                    onChange={(e) => changeInputGenre(e, g.id)}
-                  >
-                    {g.name}
-                  </Checkbox>
-                ))}
-              </Stack>
-            </FormControl>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button
-              colorScheme="blue"
-              mr={3}
-              onClick={createQuestion}
-              disabled={
-                !questionInput.title ||
-                !questionInput.content ||
-                questionInput.genres.length === 0
-              }
-            >
-              投稿する
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => setDisplayQuestionModal(false)}
-            >
-              キャンセル
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-      <AlertModal
-        status={formAlert.status}
+        <FormControl>
+          <Input
+            value={questionInput.title}
+            type="text"
+            placeholder="題名を入力"
+            isRequired
+            my="4"
+            onChange={(e) =>
+              setQuestionInput((prevState) => ({
+                ...prevState,
+                title: e.target.value,
+              }))
+            }
+          />
+          <Textarea
+            minHeight={"200px"}
+            mb="4"
+            placeholder="内容を入力"
+            isRequired
+            size="lg"
+            value={questionInput.content}
+            onChange={(e) =>
+              setQuestionInput((prevValue) => ({
+                ...prevValue,
+                content: e.target.value,
+              }))
+            }
+          />
+          <Stack spacing={[1, 5]} direction={["column", "row"]}>
+            {genres.map((g) => (
+              <Checkbox
+                value={g.id}
+                key={g.id}
+                onChange={(e) => changeInputGenre(e, g.id)}
+              >
+                {g.name}
+              </Checkbox>
+            ))}
+          </Stack>
+        </FormControl>
+      </ModalComponent>
+      <AlertComponent
+        status={alert.status}
         width="90%"
-        isOpen={formAlert.isOpen}
-        onClose={() => (formAlert.isOpen = false)}
+        displayAlert={alert.displayAlert}
+        onClose={initalizeFormAlert}
       >
-        {formAlert.message}
-      </AlertModal>
+        {alert.message}
+      </AlertComponent>
     </Layout>
   );
 };

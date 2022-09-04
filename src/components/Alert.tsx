@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Alert, AlertIcon, AlertTitle, CloseButton } from "@chakra-ui/react";
+import { useDisclosure } from "@/hooks/useDisclosure";
 
 const AlertWrapper = styled.div<{ isOpen: boolean }>`
   width: 100%;
@@ -16,24 +17,36 @@ const AlertWrapper = styled.div<{ isOpen: boolean }>`
 type PropsType = {
   status: "info" | "warning" | "success" | "error" | "loading";
   width?: string | number;
-  isOpen: boolean;
+  displayAlert: boolean;
   children: string;
   onClose: () => void;
 };
 
-const AlertModal = (props: PropsType) => {
-  const { status, width, children: message, isOpen, onClose } = props;
+export const AlertComponent = (props: PropsType) => {
+  const { status, width, children: message, displayAlert, onClose } = props;
+  const { close, open, isOpen } = useDisclosure();
 
-  // アラートを5秒後に消すようにする
+  const closeAlert = () => {
+    onClose();
+    close();
+  };
+
+  useEffect(() => {
+    if (displayAlert) {
+      open();
+      setTimeout(() => closeAlert(), 5000);
+    } else {
+      close();
+    }
+  }, [displayAlert, close]);
+
   return (
     <AlertWrapper isOpen={isOpen}>
       <Alert w={width} status={status}>
         <AlertIcon />
         <AlertTitle>{message}</AlertTitle>
-				<CloseButton onClick={onClose} />
+        <CloseButton onClick={closeAlert} ml="auto" />
       </Alert>
     </AlertWrapper>
   );
 };
-
-export default AlertModal;
