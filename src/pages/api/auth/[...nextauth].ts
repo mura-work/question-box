@@ -11,12 +11,18 @@ export default NextAuth({
   callbacks: {
     async signIn({ user, account, profile, email, credentials }) {
       console.log("サインイン");
+      console.log(user, account, profile, email, credentials)
       return true;
+    },
+    async session({ session, user, token }) {
+      console.log('セッション')
+      console.log({session, user, token})
+      return session;
     },
   },
   pages: {
-    // signIn: "/questions",
-    // signOut: "/login",
+    // signIn: "/signin",
+    signOut: "/signin",
   },
   secret: "secret",
 });
