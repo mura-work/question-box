@@ -9,7 +9,12 @@ type CommentInput = {
   content: string;
 };
 
-type PostBody = QuestionInput | CommentInput;
+type GenreInput = {
+  color: string;
+  name: string;
+};
+
+type PostBody = QuestionInput | CommentInput | GenreInput;
 
 // updateの型定義
 type QuestionUpdateInput = {
@@ -25,7 +30,13 @@ type CommentUpdateInput = {
   content: string;
 };
 
-type UpdateBody = QuestionUpdateInput | CommentUpdateInput;
+type GenreUpdateInput = {
+  id: number;
+  name: string;
+  color: string;
+};
+
+type UpdateBody = QuestionUpdateInput | CommentUpdateInput | GenreUpdateInput;
 
 // deleteの型定義
 type deleteParamType = {

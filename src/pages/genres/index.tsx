@@ -13,8 +13,8 @@ import {
   FormControl,
   Input,
   Text,
+	Heading,
 } from "@chakra-ui/react";
-import { EditIcon } from "@chakra-ui/icons";
 import { ModalComponent } from "@/components/Modal";
 import { AlertComponent } from "@/components/Alert";
 import { AlertTypes } from "@/types/index";
@@ -31,7 +31,7 @@ const GenresList = () => {
   const [genreForm, setGenreForm] = useState<Genre>({
     id: -100,
     name: "",
-    color: "",
+    color: "#f21c1c",
   });
   const [alert, setAlert] = useState<AlertTypes>({
     displayAlert: false,
@@ -39,15 +39,14 @@ const GenresList = () => {
     status: "success",
   });
 
+  const init = async () => {
+    const result = await RequestMapper.get("/genres");
+    result && setGenres(result);
+  };
+
   useEffect(() => {
-    const init = async () => {
-      const result = await RequestMapper.get("/genres");
-      result && setGenres(result);
-    };
     init();
   }, []);
-
-  const editGenre = (genre: Genre) => {};
 
   const initalizeFormAlert = () => {
     setAlert({
@@ -61,11 +60,90 @@ const GenresList = () => {
     setGenreForm({ id: -100, name: "", color: "" });
   };
 
-  const updateGenre = () => {};
+  const createGenre = async () => {
+    const param = { name: genreForm.name, color: genreForm.color };
+    try {
+      const result = await RequestMapper.post("/genres", param);
+      if (result.status) {
+        setAlert({
+          displayAlert: true,
+          message: "ジャンルが作成されました",
+          status: "success",
+        });
+      }
+      init();
+    } catch (e) {
+      console.log(e);
+      setAlert({
+        displayAlert: true,
+        message: "ジャンルが作成できませんでした",
+        status: "error",
+      });
+    }
+  };
+
+  const updateGenre = async () => {
+    try {
+      const result = await RequestMapper.update("/genres", genreForm);
+      if (result.status) {
+        setAlert({
+          displayAlert: true,
+          message: "ジャンルが更新されました",
+          status: "success",
+        });
+      }
+      init();
+    } catch (e) {
+      console.log(e);
+      setAlert({
+        displayAlert: true,
+        message: "ジャンルが更新できませんでした",
+        status: "error",
+      });
+    }
+  };
+
+  const confirmGenre = async () => {
+    genreForm.id < 0 ? await createGenre() : await updateGenre();
+    initializeGenreForm();
+    setOpenModal(false);
+  };
+
+  const deleteGenre = async (id: number) => {
+    if (!id) return;
+    try {
+      const result = await RequestMapper.delete("/genres", { id });
+			if (result.status === 200) {
+				setAlert({
+          displayAlert: true,
+          message: "ジャンルが削除されました",
+          status: "success",
+        });
+				init()
+			}
+    } catch (e) {
+      console.log(e);
+			setAlert({
+        displayAlert: true,
+        message: "ジャンルが削除できませんでした",
+        status: "error",
+      });
+    }
+  };
 
   return (
     <Layout>
+			<Heading textAlign="center" mb="10">
+        ジャンル
+      </Heading>
       <div className="genres-list">
+        <Button
+          colorScheme="cyan"
+          mb="4"
+          onClick={() => setOpenModal(true)}
+        >
+          新規追加
+        </Button>
         <Table>
           <Thead>
             <Tr>
@@ -74,17 +152,20 @@ const GenresList = () => {
               <Th>カラー</Th>
               <Th>表示例</Th>
               <Th></Th>
+              <Th></Th>
             </Tr>
           </Thead>
           <Tbody>
             {genres.map((g) => (
               <Tr key={g.id}>
                 <Th>{g.id}</Th>
-                <Th>{g.name}</Th>
+                <Th>
+                  <Text textTransform="none">{g.name}</Text>
+                </Th>
                 <Th>{g.color}</Th>
                 <Th>
                   <Tag key={g.id} variant="solid" mr="1" bg={g.color}>
-                    {g.name}
+                    <Text textTransform="none">{g.name}</Text>
                   </Tag>
                 </Th>
                 <Th>
@@ -99,13 +180,22 @@ const GenresList = () => {
                     変更
                   </Button>
                 </Th>
+                <Th>
+                  <Button
+                    size="xs"
+                    colorScheme="red"
+                    onClick={() => deleteGenre(g.id)}
+                  >
+                    削除
+                  </Button>
+                </Th>
               </Tr>
             ))}
           </Tbody>
         </Table>
       </div>
       <ModalComponent
-        confirm={updateGenre}
+        confirm={confirmGenre}
         cancel={() => {
           setOpenModal(false), initializeGenreForm;
         }}
@@ -131,7 +221,7 @@ const GenresList = () => {
           <Text mt="4" mb="2">
             カラー
           </Text>
-          <input
+          <Input
             type="color"
             value={genreForm.color}
             onChange={(e) => {
@@ -141,7 +231,7 @@ const GenresList = () => {
               }));
             }}
           />
-					<Text>{genreForm.color}</Text>
+          <Text>{genreForm.color}</Text>
         </FormControl>
       </ModalComponent>
       <AlertComponent
