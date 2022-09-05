@@ -1,46 +1,37 @@
-import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/router'
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import styled from "styled-components";
+
+const HeaderComponent = styled.div`
+  width: 100%;
+  display: flex;
+  margin: 8px;
+`
+
+const Left = styled.div`
+  display: flex;
+  a {
+    margin-left: 8px;
+    font-size: 20px;
+  }
+`
 
 const Header: React.FC = () => {
-  const router = useRouter()
-  const isActive: (pathname: string) => boolean =
-    pathname => router.pathname === pathname
+  const router = useRouter();
+  const isActive: (pathname: string) => boolean = (pathname) =>
+    router.pathname === pathname;
 
-  return(
-    <nav>
-      <div className="left">
-        <Link href="/questions">
-          <a data-active={isActive('/questions')}>Questions</a>
-        </Link>
+  return (
+    <HeaderComponent>
+      <Left>
+        <Link href="/questions">質問箱</Link>
+        <Link href="/genres">質問のジャンル</Link>
+      </Left>
+      <div className="right">
       </div>
-      <style jsx>{`
-        nav {
-          display: flex;
-          padding: 2rem;
-          align-items: center;
-        }
+    </HeaderComponent>
+  );
+};
 
-        .bold {
-          font-weight: bold;
-        }
-
-        a {
-          text-decoration: none;
-          color: #000;
-          display: inline-block;
-        }
-
-        .left a[data-active='true'] {
-          color: gray;
-        }
-
-        a + a {
-          margin-left: 1rem;
-        }
-      `}</style>
-    </nav>
-  )
-}
-
-export default Header
+export default Header;
